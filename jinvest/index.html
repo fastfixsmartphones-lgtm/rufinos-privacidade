@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
+<meta name="theme-color" content="#0b0c0f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="J_invest">
+<link rel="apple-touch-icon" href="icon.png">
+<title>J_invest Celular</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Celular primeiro: cabeçalho com preço, gráfico grande com os desenhos dos agentes, fluxo, Fimathe e leituras em cartões. Escuro com dourado, igual ao escritório. */
+:root{
+  --bg:#0b0c0f;--panel:#121419;--panel2:#191c22;--line:#262a32;--text:#eef0f2;--muted:#8a9099;
+  --gold:#f5c542;--up:#3ddc97;--down:#ff6b6b;--smc:#38c6e0;--wy:#f5c542;--pa:#a78bfa;--fim:#ff7a3c;
+  --display:"Barlow Condensed",ui-sans-serif,system-ui,sans-serif;--body:"Barlow",ui-sans-serif,system-ui,sans-serif;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:var(--body);font-size:14px;line-height:1.45;-webkit-tap-highlight-color:transparent}
+body{padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px));padding-block:max(10px,env(safe-area-inset-top,0px)) max(24px,env(safe-area-inset-bottom,0px))}
+.wrap{max-width:1100px;margin:0 auto;display:flex;flex-direction:column;gap:10px}
+header{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.logo{width:34px;height:34px;border-radius:9px;background:var(--gold);color:#16120a;display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:20px}
+.brand b{font-family:var(--display);font-size:18px;letter-spacing:.06em}.brand small{display:block;font-size:11px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase}
+.px{margin-left:auto;text-align:right}.px b{font-family:var(--display);font-size:26px;font-variant-numeric:tabular-nums}.px small{display:block;font-size:12px;font-variant-numeric:tabular-nums}
+.up{color:var(--up)}.down{color:var(--down)}.mut{color:var(--muted)}
+.bar{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+button{font:inherit;cursor:pointer;border:1px solid var(--line);background:var(--panel2);color:var(--text);padding:8px 12px;border-radius:9px;font-weight:600;touch-action:manipulation}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.seg{display:inline-flex;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:3px}
+.seg button{border:0;background:transparent;color:var(--muted);padding:6px 12px;border-radius:7px}
+.seg button[aria-pressed="true"]{background:var(--gold);color:#16120a}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;font-size:13px}
+.chip i{width:8px;height:8px;border-radius:50%;background:#4a4f57}
+.chip[aria-pressed="true"]{border-color:var(--c);color:var(--c)}.chip[aria-pressed="true"] i{background:var(--c);box-shadow:0 0 8px var(--c)}
+.gold{background:var(--gold);color:#16120a;border-color:var(--gold)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px;min-width:0}
+.card h2{margin:0 0 6px;font-family:var(--display);font-size:15px;letter-spacing:.1em;text-transform:uppercase;display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}
+.chartbox{position:relative;padding:0;overflow:hidden}
+#chart{display:block;width:100%;touch-action:none}
+#flow{display:block;width:100%}
+.zoom{position:absolute;right:8px;top:8px;display:flex;gap:4px}.zoom button{padding:4px 10px;background:#0b0c0fcc}
+.status{font-size:12px;color:var(--muted)}
+.reads{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
+.read b{font-family:var(--display);letter-spacing:.08em;color:var(--c)}
+.read p{margin:4px 0 0;color:#d7dbe0}
+.read .sc{margin-top:6px;border-top:1px dashed var(--line);padding-top:6px;font-size:13px}
+.fim{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.fim label{display:flex;gap:6px;align-items:center;color:var(--muted);font-size:13px}
+input,select{background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:7px 8px;font:inherit}
+.res{margin-top:8px;border-radius:9px;padding:8px 10px;border:1px solid var(--line);font-size:13px}.res.ok{border-color:#1f5c43;background:#3ddc9712}.res.bad{border-color:#5c1f1f;background:#ff6b6b12}
+.err{border-color:#5c1f1f;background:#ff6b6b12;color:#ffc7c7}
+details summary{cursor:pointer;color:var(--gold);font-family:var(--display);letter-spacing:.06em}
+.flowhead{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}.flowhead b{font-family:var(--display);color:var(--up);letter-spacing:.08em}
+#flowRead{font-family:var(--display);font-size:17px;font-weight:700}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style></head>
+<body><div class="wrap">
+<header>
+  <div class="logo">J</div>
+  <div class="brand"><b>J_INVEST <span style="color:var(--gold)">CELULAR</span></b><small id="src">ouro · carregando</small></div>
+  <div class="px"><b id="px">—</b><small id="chg" class="mut">—</small></div>
+</header>
+
+<div class="bar">
+  <div class="seg" role="group" aria-label="Tempo gráfico" id="tfSeg"><button data-tf="5m" aria-pressed="true">M5</button><button data-tf="15m" aria-pressed="false">M15</button><button data-tf="1h" aria-pressed="false">H1</button></div>
+  <button class="gold" id="go">Analisar agora</button>
+</div>
+<div class="bar" role="group" aria-label="Desenhos dos agentes">
+  <button class="chip" data-ag="smc" style="--c:var(--smc)" aria-pressed="true"><i></i>SMC</button>
+  <button class="chip" data-ag="wy" style="--c:var(--wy)" aria-pressed="true"><i></i>Wyckoff</button>
+  <button class="chip" data-ag="pa" style="--c:var(--pa)" aria-pressed="false"><i></i>Price Action</button>
+  <button class="chip" data-ag="fim" style="--c:var(--fim)" aria-pressed="false"><i></i>Fimathe</button>
+</div>
+
+<div class="card chartbox"><canvas id="chart" aria-label="Gráfico de velas com os desenhos dos agentes"></canvas>
+  <div class="zoom"><button id="zOut" aria-label="Mais velas">−</button><button id="zIn" aria-label="Menos velas">+</button><button id="zEnd" aria-label="Voltar para o agora">⇥</button></div></div>
+
+<div class="card"><div class="flowhead"><b>FLUXO (DELTA)</b><span id="flowRead" class="mut">—</span></div>
+  <canvas id="flow" aria-label="Delta por vela e acumulado"></canvas>
+  <div class="status">Verde para cima: comprador agressivo. Vermelho para baixo: vendedor. Linha dourada: fluxo acumulado. Aqui o delta é real (volume agredido da Binance).</div></div>
+
+<div class="card" id="fimCard" hidden>
+  <h2>Fimathe · canal da hora <span class="status" id="fimNote"></span></h2>
+  <div class="fim"><label>Dia <input type="date" id="fDate"></label><label>Hora <select id="fHour" aria-label="Hora (Brasília)"></select></label><button class="gold" id="fGo">Formar canal</button></div>
+  <div class="res" id="fRes" hidden></div>
+  <div class="status">CA = 4 primeiras velas de M5 da hora (Brasília). C1 do mesmo tamanho. Entrada na vela que fecha rompendo o C1 até 15% do ciclo; acima disso espera pullback. Alvo = C1 + 2 ciclos. Stop fora do CA +10%. Canal maior que 10,00 = fatiado (ciclo = meio canal).</div>
+</div>
+
+<div class="reads" id="reads"></div>
+
+<div class="card"><details><summary>Ajuste para o preço da Exness (XAUUSD)</summary>
+  <p class="status">As velas vêm do PAXG (ouro tokenizado na Binance), que fica alguns dólares diferente do XAUUSD da corretora e também anda no fim de semana. Digite o preço do XAUUSD que aparece agora no app da Exness e eu ajusto todos os níveis.</p>
+  <div class="fim"><label>XAUUSD agora <input type="number" step="0.01" id="xIn" inputmode="decimal"></label><button id="xSet">Ajustar</button><button id="xClr">Tirar ajuste</button><span class="status" id="xNote"></span></div>
+</details></div>
+<p class="status">Só análise e estudo: nada aqui abre ordem. Passado não garante o futuro; a decisão é sua.</p>
+</div>
+
+<script>
+"use strict";
+const $=id=>document.getElementById(id);
+const br=(v,d=2)=>Number(v).toLocaleString("pt-BR",{minimumFractionDigits:d,maximumFractionDigits:d});
+const ls={get(k,d){try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const COL={smc:"#38c6e0",wy:"#f5c542",pa:"#a78bfa",fim:"#ff7a3c",up:"#3ddc97",down:"#ff6b6b",mut:"#8a9099",grid:"#1c1f25"};
+let TF=ls.get("tf","5m"),SHOW={smc:true,wy:true,pa:false,fim:false,...ls.get("show",{})},OFF=ls.get("off",0);
+let B=[],M5=[],A=null,view={n:110,end:0},fimReq=null,lastLoad=0,loading=false;
+const HOSTS=["https://data-api.binance.vision","https://api.binance.com","https://api1.binance.com"];
+
+/* ---------- dados: PAXG/USDT na Binance (delta = volume agredido comprador - vendedor) ---------- */
+async function klines(tf,limit){let err;for(const h of HOSTS){try{const r=await fetch(`${h}/api/v3/klines?symbol=PAXGUSDT&interval=${tf}&limit=${limit}`,{cache:"no-store"});
+  if(!r.ok)throw new Error("HTTP "+r.status);const j=await r.json();return j.map(k=>{const v=+k[5],tb=+k[9];return{t:Math.floor(k[0]/1000),o:+k[1]+OFF,h:+k[2]+OFF,l:+k[3]+OFF,c:+k[4]+OFF,v,d:2*tb-v}})}catch(e){err=e}}throw err}
+async function load(){if(loading)return;loading=true;try{
+    const [b,m]=await Promise.all([klines(TF,500),TF==="5m"?null:klines("5m",1000)]);B=b;M5=m||b;lastLoad=Date.now();
+    $("src").textContent=`PAXG · Binance${OFF?` · ajuste ${OFF>0?"+":""}${br(OFF)}`:""} · ${TF.toUpperCase()}`;analyze();render();
+  }catch(e){showErr("Não consegui buscar as velas do ouro na Binance. Confira a internet do celular. Se estiver abrindo dentro de outro app, abra este arquivo direto no navegador (Chrome ou Safari).")}
+  loading=false}
+function showErr(t){let e=$("errBox");if(!e){e=document.createElement("div");e.id="errBox";e.className="card err";document.querySelector(".bar").before(e)}e.textContent=t}
+function clearErr(){const e=$("errBox");if(e)e.remove()}
+
+/* ---------- utilidades ---------- */
+const brt=t=>new Date((t-3*3600)*1000);
+const hm=t=>{const d=brt(t);return String(d.getUTCHours()).padStart(2,"0")+":"+String(d.getUTCMinutes()).padStart(2,"0")};
+function atr(b,n=100){const L=b.slice(-n);return L.reduce((s,x)=>s+x.h-x.l,0)/Math.max(1,L.length)}
+function pivots(b,n=4){const P=[];for(let i=n;i<b.length-n;i++){let hi=true,lo=true;for(let k=i-n;k<=i+n;k++){if(k===i)continue;if(b[k].h>=b[i].h)hi=false;if(b[k].l<=b[i].l)lo=false}
+  if(hi)P.push({i,p:b[i].h,t:1});if(lo)P.push({i,p:b[i].l,t:-1})}return P.sort((a,c)=>a.i-c.i)}
+const sumD=(a,b)=>{let d=0,v=0;for(let j=Math.max(0,a);j<=Math.min(B.length-1,b);j++){d+=B[j].d;v+=Math.abs(B[j].d)}return v?d/v:0};
+
+/* ---------- SMC ---------- */
+function smc(b,P,aR){const ev=[];P.forEach(p=>{for(let j=p.i+1;j<b.length;j++){if(p.t>0?b[j].c>p.p:b[j].c<p.p){ev.push({p,j,dir:p.t});break}}});
+  ev.sort((x,y)=>x.j-y.j);let tr=0;ev.forEach(e=>{e.lab=(tr===0||tr===e.dir)?"BOS":"ChoCh";tr=e.dir});
+  const liq=P.filter(p=>{for(let j=p.i+1;j<b.length;j++)if(p.t>0?b[j].h>p.p:b[j].l<p.p)return false;return true}).slice(-6);
+  const fvg=[];for(let i=1;i<b.length-1;i++){if(b[i+1].l>b[i-1].h){const lo=b[i-1].h,hi=b[i+1].l;let f=false;for(let k=i+2;k<b.length;k++)if(b[k].l<lo){f=true;break}if(!f&&hi-lo>.15*aR)fvg.push({i,lo,hi,s:1})}
+    if(b[i-1].l>b[i+1].h){const hi=b[i-1].l,lo=b[i+1].h;let f=false;for(let k=i+2;k<b.length;k++)if(b[k].h>hi){f=true;break}if(!f&&hi-lo>.15*aR)fvg.push({i,lo,hi,s:-1})}}
+  /* OB: última vela contrária antes da perna que fez o último rompimento */
+  let ob=null;const last=ev[ev.length-1];if(last){const s=last.dir;let o=-1;for(let q=P.length-1;q>=0;q--)if(P[q].t===-s&&P[q].i<last.j){o=P[q].i;break}
+    if(o>=0){for(let j=last.j;j>=Math.max(0,o-3);j--)if(s>0?b[j].c<b[j].o:b[j].c>b[j].o){let mit=false;for(let k=last.j+1;k<b.length;k++)if(s>0?b[k].l<b[j].l:b[k].h>b[j].h){mit=true;break}
+      if(!mit)ob={i:j,lo:b[j].l,hi:b[j].h,s};break}}}
+  const trend=last?last.dir:0,c=b[b.length-1].c;
+  const highs=liq.filter(x=>x.t>0).map(x=>x.p).filter(v=>v>c).sort((x,y)=>x-y),lows=liq.filter(x=>x.t<0).map(x=>x.p).filter(v=>v<c).sort((x,y)=>y-x);
+  let txt=`Estrutura ${trend>0?"de alta":trend<0?"de baixa":"indefinida"}`+(last?`: último ${last.lab} ${last.dir>0?"para cima":"para baixo"} em ${br(last.p.p)} (${hm(b[last.j].t)}).`:".");
+  txt+=highs.length?` Liquidez acima em ${br(highs[0])}.`:"";txt+=lows.length?` Liquidez abaixo em ${br(lows[0])}.`:"";
+  let sc="";if(trend){const z=fvg.filter(f=>f.s===trend).slice(-1)[0]||ob;
+    if(z)sc=`Cenário a favor: ${trend>0?"compra":"venda"} no recuo até o ${z===ob?"OB":"FVG"} ${br(z.lo)}–${br(z.hi)}${trend>0&&z.hi>c||trend<0&&z.lo<c?" (o preço já está na zona)":""}, alvo na liquidez ${trend>0?(highs[0]?br(highs[0]):"de cima"):(lows[0]?br(lows[0]):"de baixo")}.`;
+    const sw=trend>0?lows[0]:highs[0];if(sw)sc+=` Se o preço varrer ${br(sw)} e voltar com quebra, é o gatilho mais forte.`}
+  const near=[...liq.filter(x=>x.t>0&&x.p>c).sort((x,y)=>x.p-y.p).slice(0,2),...liq.filter(x=>x.t<0&&x.p<c).sort((x,y)=>y.p-x.p).slice(0,2)];
+  return{ev:ev.slice(-5),liq:near,fvg:fvg.slice(-3),ob,trend,txt,sc}}
+
+/* ---------- Wyckoff ---------- */
+function wyckoff(b,aR){const e=b.length-1,R=60,rec=14;if(e<R+80)return{txt:"Poucas velas para ler a faixa."};
+  const s0=e-R-rec;let rh=-1e9,rl=1e9;for(let j=s0;j<=e-rec;j++){rh=Math.max(rh,b[j].h);rl=Math.min(rl,b[j].l)}const w=rh-rl,c=b[e].c;
+  if(w<3*aR)return{txt:"Sem faixa lateral clara: o preço está em tendência ou parado demais.",rh,rl,s0,none:true};
+  const prior=b[s0].c-b[Math.max(0,s0-60)].c,ctx=prior<-3*aR?"Acumulação":prior>3*aR?"Distribuição":"Faixa lateral";
+  let sp=null;for(let j=e-rec;j<=e;j++){if(b[j].l<rl-.03*w&&b[j].l>rl-.45*w){for(let k=j;k<=Math.min(e,j+3);k++)if(b[k].c>rl){sp={j,p:b[j].l,s:1};break}}
+    if(b[j].h>rh+.03*w&&b[j].h<rh+.45*w){for(let k=j;k<=Math.min(e,j+3);k++)if(b[k].c<rh){sp={j,p:b[j].h,s:-1};break}}}
+  const bs=c>rh+.1*w?1:c<rl-.1*w?-1:0,dR=sumD(e-5,e),dRange=sumD(s0,e-rec);let ph,txt,sc="";
+  if(bs){ph=(bs>0?c>rh+w:c<rl-w)?"E":"D";txt=`${ctx} rompida para ${bs>0?"cima":"baixo"} (fase ${ph}). Fluxo das últimas 6 velas ${dR>=0?"+":""}${Math.round(100*dR)}%.`;
+    sc=`Trabalhar a favor do rompimento: ${bs>0?"compra":"venda"} na volta ao ${bs>0?"topo":"fundo"} da faixa (${br(bs>0?rh:rl)})${(dR*bs<0)?", mas o fluxo virou contra: só observando":""}.`}
+  else if(sp){ph="C";const vR=b[sp.j].v/(b.slice(-200).reduce((s,x)=>s+x.v,0)/200||1),fl=sumD(sp.j,Math.min(e,sp.j+2));
+    txt=`${ctx}, fase C: ${sp.s>0?"spring":"UTAD"} em ${br(sp.p)} (volume ${br(vR,1)}x a média${fl*sp.s>.15?", fluxo virou na hora: absorção":""}).`;
+    sc=`${sp.s>0?"Compra":"Venda"} no teste do ${sp.s>0?"spring":"UTAD"}, stop além de ${br(sp.p)}, alvo no ${sp.s>0?"topo":"fundo"} da faixa (${br(sp.s>0?rh:rl)}).`}
+  else{ph="B";txt=`${ctx}, fase B entre ${br(rl)} e ${br(rh)}. Delta na faixa ${dRange>=0?"+":""}${Math.round(100*dRange)}%${Math.abs(dRange)>.05?(dRange>0?": comprador absorvendo.":": vendedor absorvendo."):"."}`;
+    sc=`Esperando ${ctx==="Distribuição"?"o UTAD (falso rompimento do topo)":ctx==="Acumulação"?"o spring (falso rompimento do fundo)":"a varrida de uma das pontas"} para entrar.`}
+  return{rh,rl,s0,sp,ph,ctx,txt,sc}}
+
+/* ---------- Price Action ---------- */
+function priceAction(b,P,aR){const e=b.length-1,c=b[e].c,H=P.filter(p=>p.t>0).slice(-3),L=P.filter(p=>p.t<0).slice(-3);
+  let tr=0;if(H.length>=2&&L.length>=2){const hh=H[H.length-1].p>H[H.length-2].p,hl=L[L.length-1].p>L[L.length-2].p;tr=hh&&hl?1:!hh&&!hl?-1:0}
+  const lta=L.length>=2&&L[L.length-1].p>L[L.length-2].p?[L[L.length-2],L[L.length-1]]:null,ltb=H.length>=2&&H[H.length-1].p<H[H.length-2].p?[H[H.length-2],H[H.length-1]]:null;
+  /* máxima e mínima de ontem (Brasília) */
+  const dk=t=>{const d=brt(t);return d.getUTCFullYear()*1e4+d.getUTCMonth()*100+d.getUTCDate()},today=dk(b[e].t);let pdh=0,pdl=0,yd=null;
+  for(let j=e;j>=0;j--){const k=dk(b[j].t);if(k===today)continue;if(yd===null)yd=k;if(k!==yd)break;pdh=Math.max(pdh,b[j].h);pdl=pdl?Math.min(pdl,b[j].l):b[j].l}
+  let fig="";if(H.length>=2&&Math.abs(H[H.length-1].p-H[H.length-2].p)<.3*aR&&c<H[H.length-1].p)fig=`Topo duplo em ${br(H[H.length-1].p)}: perdendo o fundo do meio, vira venda.`;
+  else if(L.length>=2&&Math.abs(L[L.length-1].p-L[L.length-2].p)<.3*aR&&c>L[L.length-1].p)fig=`Fundo duplo em ${br(L[L.length-1].p)}: passando o topo do meio, vira compra.`;
+  else if(lta&&ltb)fig="Triângulo: LTA e LTB se fechando. Esperar o rompimento.";
+  const rnd=Math.round(c/10)*10;
+  const txt=`Topos e fundos ${tr>0?"subindo (tendência de alta)":tr<0?"descendo (tendência de baixa)":"sem direção (lateral)"}.`+(pdh?` Máxima de ontem ${br(pdh)}, mínima ${br(pdl)}.`:"")+` Número redondo mais perto: ${br(rnd,0)}.`;
+  const sc=fig||(tr?`${tr>0?"Compra no recuo até a LTA ou suporte":"Venda no repique até a LTB ou resistência"}, com barra de sinal a favor.`:"No meio da lateral não compensa: comprar embaixo, vender em cima, ou esperar.");
+  return{tr,lta,ltb,pdh,pdl,txt,sc}}
+
+/* ---------- Fimathe (velas de M5) ---------- */
+function fimathe(t0){const b=M5;let a=b.findIndex(x=>x.t>=t0);if(a<0||b[a].t>=t0+3600)return{st:0,txt:"Não tenho velas de M5 dessa hora (a Binance guarda ~3 dias aqui). Escolha uma hora mais recente."};
+  if(a+3>=b.length)return{st:0,txt:"As 4 primeiras velas dessa hora ainda não fecharam."};
+  let hi=-1e9,lo=1e9;for(let k=a;k<a+4;k++){hi=Math.max(hi,b[k].h);lo=Math.min(lo,b[k].l)}const W=hi-lo,fat=W>10,U=fat?W/2:W;
+  const o={t0,hi,lo,W,U,fat,st:1,side:0,caDir:0,entry:0,sl:0,tp:0,tSig:0,tEnd:0};let endP=a;while(endP+1<b.length&&b[endP+1].t<t0+3600)endP++;
+  for(let j=a+4;j<Math.min(b.length-1,endP+300);j++){const inP=j<=endP;
+    if(o.st===1){if(!inP)break;if(b[j].c>hi)o.caDir=1;else if(b[j].c<lo)o.caDir=-1;const sd=b[j].c>hi+U?1:b[j].c<lo-U?-1:0;if(!sd)continue;
+      const line=sd>0?hi+U:lo-U;o.side=sd;o.caDir=sd;o.tSig=b[j].t;o.tp=line+sd*2*U;o.sl=(sd>0?lo:hi)-sd*W*.1;
+      if(Math.abs(b[j].c-line)<=U*.15){o.entry=b[j].c;o.st=5}else{o.entry=line;o.st=3}continue}
+    if(o.st===3){if(!inP){o.st=4;break}if(o.side>0?b[j].l<=o.entry:b[j].h>=o.entry)o.st=5;else if(o.side>0?b[j].h>=o.entry+.5*(o.tp-o.entry):b[j].l<=o.entry-.5*(o.entry-o.tp)){o.st=4;break}if(o.st!==5)continue;continue}
+    if(o.st===5){if(o.side>0?b[j].l<=o.sl:b[j].h>=o.sl){o.st=7;o.tEnd=b[j].t;break}if(o.side>0?b[j].h>=o.tp:b[j].l<=o.tp){o.st=6;o.tEnd=b[j].t;break}}}
+  const pts=o.side?Math.round(Math.abs((o.st===6?o.tp:o.sl)-o.entry)*100):0;
+  o.txt=`CA ${br(lo)}–${br(hi)} (${Math.round(W*100)} pts, ${fat?"fatiado":"primeiro ciclo"}). `+({1:"Não fechou rompendo o C1: sem entrada.",3:"Rompeu forte: aguardando pullback na linha do C1.",4:"Cancelado: andou 50% até o alvo sem pullback.",5:`${o.side>0?"Compra":"Venda"} em ${br(o.entry)}, stop ${br(o.sl)}, alvo ${br(o.tp)}: em andamento.`,6:`${o.side>0?"Compra":"Venda"} em ${br(o.entry)} deu TAKE (+${pts} pts).`,7:`${o.side>0?"Compra":"Venda"} em ${br(o.entry)} deu STOP (−${pts} pts).`})[o.st];
+  return o}
+
+/* ---------- análise completa ---------- */
+function analyze(){if(B.length<150)return;const aR=atr(B),P=pivots(B,TF==="1h"?3:4);
+  A={aR,P,smc:smc(B,P,aR),wy:wyckoff(B,aR),pa:priceAction(B,P,aR)};
+  if(fimReq)A.fim=fimathe(fimReq);clearErr();renderReads()}
+
+/* ---------- gráfico ---------- */
+const cv=$("chart"),cx=cv.getContext("2d"),fc=$("flow"),fx=fc.getContext("2d");let W=0,H=0,R=1;
+function size(){W=cv.parentElement.clientWidth;H=Math.round(Math.max(300,Math.min(560,innerHeight*.52)));R=Math.min(2,devicePixelRatio||1);
+  cv.width=W*R;cv.height=H*R;cv.style.height=H+"px";const fw=fc.parentElement.clientWidth-24;fc.width=fw*R;fc.height=110*R;fc.style.height="110px";render()}
+function render(){if(!B.length){cx.setTransform(R,0,0,R,0,0);cx.clearRect(0,0,W,H);cx.fillStyle=COL.mut;cx.font="14px Barlow,sans-serif";cx.fillText("Carregando as velas do ouro…",14,30);return}
+  const n=Math.min(view.n,B.length),end=B.length-1-view.end,start=Math.max(0,end-n+1),vis=B.slice(start,end+1),padR=64,padT=10,padB=22;
+  let lo=Math.min(...vis.map(b=>b.l)),hi=Math.max(...vis.map(b=>b.h));const m=(hi-lo)*.08;lo-=m;hi+=m;
+  const X=i=>6+(i-start)*(W-padR-14)/Math.max(1,n),Y=v=>padT+(hi-v)/(hi-lo)*(H-padT-padB),bw=Math.max(1.5,(W-padR-14)/n*.62),xe=W-padR;
+  const c=cx;c.setTransform(R,0,0,R,0,0);c.clearRect(0,0,W,H);
+  /* grade */
+  const raw=(hi-lo)/6,mag=Math.pow(10,Math.floor(Math.log10(raw))),st=[1,2,5,10].map(k=>k*mag).find(s=>s>=raw);c.font="10px 'JetBrains Mono',monospace";
+  for(let v=Math.ceil(lo/st)*st;v<hi;v+=st){c.strokeStyle=COL.grid;c.beginPath();c.moveTo(0,Y(v)+.5);c.lineTo(xe,Y(v)+.5);c.stroke();c.fillStyle=COL.mut;c.fillText(br(v),xe+4,Y(v)+3)}
+  const step=Math.ceil(n/5);for(let i=start+Math.floor(step/2);i<=end;i+=step){c.fillStyle=COL.mut;c.fillText(hm(B[i].t),X(i)-14,H-6)}
+  const inV=i=>i>=start&&i<=end,lab=(t,x,y,col,al="left")=>{c.fillStyle=col;c.font="700 11px 'Barlow Condensed',sans-serif";c.textAlign=al;c.fillText(t,x,y);c.textAlign="left"};
+  if(A){
+    /* Wyckoff: faixa e spring/UTAD */
+    if(SHOW.wy&&A.wy.rh&&!A.wy.none){const x0=X(Math.max(start,A.wy.s0));c.setLineDash([5,4]);c.strokeStyle=COL.wy+"aa";[A.wy.rh,A.wy.rl].forEach(v=>{c.beginPath();c.moveTo(x0,Y(v));c.lineTo(xe,Y(v));c.stroke()});c.setLineDash([]);
+      lab(`${A.wy.ctx} · fase ${A.wy.ph}`,x0+4,Y(A.wy.rh)-4,COL.wy);if(A.wy.sp&&inV(A.wy.sp.j)){c.fillStyle="#ffa528";c.beginPath();c.arc(X(A.wy.sp.j),Y(A.wy.sp.p),4,0,7);c.fill();lab(A.wy.sp.s>0?"Spring":"UTAD",X(A.wy.sp.j),A.wy.sp.s>0?Y(A.wy.sp.p)+15:Y(A.wy.sp.p)-8,COL.wy,"center")}}
+    /* SMC */
+    if(SHOW.smc){const S=A.smc;
+      S.fvg.forEach(f=>{const x0=X(Math.max(start,f.i-1));c.fillStyle="#f5c54226";c.fillRect(x0,Y(f.hi),xe-x0,Math.max(2,Y(f.lo)-Y(f.hi)));c.strokeStyle="#c9a227";c.strokeRect(x0+.5,Y(f.hi)+.5,xe-x0,Math.max(2,Y(f.lo)-Y(f.hi)));lab("FVG",xe-26,Y(f.hi)+10,"#e2bd4a")});
+      if(S.ob){const x0=X(Math.max(start,S.ob.i));c.fillStyle="#38c6e02e";c.fillRect(x0,Y(S.ob.hi),xe-x0,Math.max(2,Y(S.ob.lo)-Y(S.ob.hi)));c.strokeStyle=COL.smc;c.strokeRect(x0+.5,Y(S.ob.hi)+.5,xe-x0,Math.max(2,Y(S.ob.lo)-Y(S.ob.hi)));lab(S.ob.s>0?"OB DE COMPRA":"OB DE VENDA",xe-70,Y(S.ob.hi)+11,COL.smc)}
+      S.ev.forEach(e=>{if(e.j<start)return;const ch=e.lab==="ChoCh",col=ch?"#ff9f43":COL.smc,xa=X(Math.max(start,e.p.i)),xb=X(Math.min(end,e.j));c.strokeStyle=col;c.setLineDash(ch?[5,4]:[]);c.beginPath();c.moveTo(xa,Y(e.p.p));c.lineTo(xb,Y(e.p.p));c.stroke();c.setLineDash([]);lab(e.lab,(xa+xb)/2,e.dir>0?Y(e.p.p)-4:Y(e.p.p)+12,col,"center")});
+      S.liq.forEach(p=>{if(p.i<start-200)return;const x0=X(Math.max(start,p.i));c.strokeStyle="#9aa0a8";c.setLineDash([2,3]);c.beginPath();c.moveTo(x0,Y(p.p));c.lineTo(xe,Y(p.p));c.stroke();c.setLineDash([]);lab("$$$",xe-22,Y(p.p)+(p.t>0?-3:11),"#c8ccd2")})}
+    /* Price Action */
+    if(SHOW.pa){const Q=A.pa;c.lineWidth=1.6;[[Q.lta,"LTA"],[Q.ltb,"LTB"]].forEach(([L,nm])=>{if(!L)return;const [p1,p2]=L,sl=(p2.p-p1.p)/(p2.i-p1.i),xa=Math.max(start,p1.i),xb=end+4;
+        c.strokeStyle=COL.pa;c.beginPath();c.moveTo(X(xa),Y(p1.p+sl*(xa-p1.i)));c.lineTo(X(xb),Y(p1.p+sl*(xb-p1.i)));c.stroke();lab(nm,Math.min(X(xb)+2,xe-24),Y(p1.p+sl*(xb-p1.i))+4,COL.pa)});c.lineWidth=1;
+      [[Q.pdh,"Máx ontem"],[Q.pdl,"Mín ontem"]].forEach(([v,nm])=>{if(!v||v<lo||v>hi)return;c.strokeStyle="#8a9099";c.setLineDash([2,3]);c.beginPath();c.moveTo(0,Y(v));c.lineTo(xe,Y(v));c.stroke();c.setLineDash([]);lab(nm,4,Y(v)-3,"#8a9099")})}
+    /* Fimathe */
+    if(SHOW.fim&&A.fim&&A.fim.st){const F=A.fim,i0=B.findIndex(x=>x.t>=F.t0),ie=F.tEnd?B.findIndex(x=>x.t>=F.tEnd):-1;
+      if(i0>=0){const xa=X(Math.max(start,i0)),xb=ie>0?X(Math.min(end,ie))+bw:xe,L=(v,col,nm,d)=>{if(!(v>lo&&v<hi))return;c.strokeStyle=col;c.setLineDash(d||[]);c.lineWidth=nm==="CA"?2:1.3;c.beginPath();c.moveTo(xa,Y(v));c.lineTo(xb,Y(v));c.stroke();c.setLineDash([]);c.lineWidth=1;lab(nm,Math.min(xb+3,xe-30),Y(v)+4,col)};
+        L(F.hi,"#16b85e","CA");L(F.lo,"#16b85e","CA");if(F.fat)L(F.lo+F.W/2,"#16b85e","50%",[2,3]);if(F.caDir>=0)L(F.hi+F.U,"#2a8fd8","C1");if(F.caDir<=0)L(F.lo-F.U,"#2a8fd8","C1");
+        if(F.side){L(F.tp,COL.up,"TP",[6,4]);L(F.sl,COL.down,"SL",[6,4])}}}}
+  vis.forEach((b,k)=>{const i=start+k,up=b.c>=b.o;c.strokeStyle=c.fillStyle=up?COL.up:COL.down;c.beginPath();c.moveTo(X(i)+.5,Y(b.h));c.lineTo(X(i)+.5,Y(b.l));c.stroke();c.fillRect(X(i)-bw/2,Y(Math.max(b.o,b.c)),bw,Math.max(1,Math.abs(Y(b.o)-Y(b.c))))});
+  const last=B[B.length-1];c.fillStyle=COL.wy;c.fillRect(xe+1,Y(last.c)-7,padR-2,14);c.fillStyle="#16120a";c.font="10px 'JetBrains Mono',monospace";c.fillText(br(last.c),xe+4,Y(last.c)+3);
+  drawFlow(start,end,n,padR,bw);header()}
+function drawFlow(start,end,n,padR,bw){const w=fc.width/R,h=110,c=fx;c.setTransform(R,0,0,R,0,0);c.clearRect(0,0,w,h);const vis=B.slice(start,end+1),X=i=>6+(i-start)*(w-padR-14)/Math.max(1,n);
+  const mx=Math.max(1e-9,...vis.map(b=>Math.abs(b.d))),mid=h/2;c.strokeStyle=COL.grid;c.beginPath();c.moveTo(0,mid);c.lineTo(w-padR,mid);c.stroke();
+  vis.forEach((b,k)=>{const hh=Math.abs(b.d)/mx*(h*.42);c.fillStyle=b.d>0?COL.up:COL.down;c.fillRect(X(start+k)-bw/2,b.d>0?mid-hh:mid,bw,Math.max(1,hh))});
+  let a=0;const cum=vis.map(b=>a+=b.d),cmn=Math.min(...cum),cmx=Math.max(...cum),cy=v=>6+(cmx-v)/((cmx-cmn)||1)*(h-12);c.strokeStyle=COL.wy;c.lineWidth=2;c.beginPath();cum.forEach((v,k)=>{k?c.lineTo(X(start+k),cy(v)):c.moveTo(X(start+k),cy(v))});c.stroke();c.lineWidth=1;
+  const L6=B.slice(-6),s=L6.reduce((q,b)=>q+b.d,0),t=L6.reduce((q,b)=>q+Math.abs(b.d),0)||1,p=Math.round(100*s/t),el=$("flowRead");
+  el.textContent=Math.abs(p)<10?"Fluxo equilibrado (últimas 6 velas)":`${p>0?"Comprador":"Vendedor"} ${Math.abs(p)>=50?"forte":Math.abs(p)>=20?"moderado":"fraco"} · ${p>0?"+":""}${p}%`;el.className=Math.abs(p)<10?"mut":p>0?"up":"down"}
+function header(){const l=B[B.length-1],ref=B[Math.max(0,B.length-1-(TF==="1h"?24:TF==="15m"?96:288))];$("px").textContent=br(l.c);const d=l.c-ref.c;
+  $("chg").textContent=`${d>=0?"+":"−"}${br(Math.abs(d))} em 24h · ${hm(l.t)}`;$("chg").className=d>=0?"up":"down"}
+
+/* ---------- leituras em cartões ---------- */
+function renderReads(){const box=$("reads");box.innerHTML="";if(!A)return;
+  [["SMC",COL.smc,A.smc],["Wyckoff",COL.wy,A.wy],["Price Action",COL.pa,A.pa]].forEach(([n,col,o])=>{const d=document.createElement("div");d.className="card read";d.style.setProperty("--c",col);
+    d.innerHTML="<b></b><p></p><div class='sc'></div>";d.children[0].textContent=n.toUpperCase();d.children[1].textContent=o.txt||"";d.children[2].textContent=o.sc||"";if(!o.sc)d.children[2].remove();box.appendChild(d)});
+  if(A.fim){const r=$("fRes");r.hidden=false;r.className="res"+(A.fim.st===6?" ok":A.fim.st===7||A.fim.st===4?" bad":"");r.textContent=`Canal das ${hm(A.fim.t0)}: ${A.fim.txt}`}}
+
+/* ---------- controles ---------- */
+document.querySelectorAll("#tfSeg button").forEach(b=>{b.setAttribute("aria-pressed",b.dataset.tf===TF);b.onclick=()=>{TF=b.dataset.tf;ls.set("tf",TF);document.querySelectorAll("#tfSeg button").forEach(x=>x.setAttribute("aria-pressed",x===b));view.end=0;load()}});
+document.querySelectorAll("[data-ag]").forEach(b=>{const k=b.dataset.ag;b.setAttribute("aria-pressed",!!SHOW[k]);b.onclick=()=>{SHOW[k]=!SHOW[k];ls.set("show",SHOW);b.setAttribute("aria-pressed",SHOW[k]);$("fimCard").hidden=!SHOW.fim;render()}});
+$("fimCard").hidden=!SHOW.fim;
+$("go").onclick=()=>load();
+$("zIn").onclick=()=>{view.n=Math.max(30,Math.round(view.n/1.4));render()};$("zOut").onclick=()=>{view.n=Math.min(480,Math.round(view.n*1.4));render()};$("zEnd").onclick=()=>{view.end=0;render()};
+/* arrastar para voltar no tempo */
+let drag=null;cv.addEventListener("pointerdown",e=>{drag={x:e.clientX,end:view.end};cv.setPointerCapture(e.pointerId)});
+cv.addEventListener("pointermove",e=>{if(!drag)return;const per=(W-78)/view.n,dx=Math.round((e.clientX-drag.x)/per);view.end=Math.max(0,Math.min(B.length-view.n,drag.end+dx));render()});
+cv.addEventListener("pointerup",()=>drag=null);cv.addEventListener("pointercancel",()=>drag=null);
+/* Fimathe */
+for(let h=0;h<24;h++){const o=document.createElement("option");o.value=h;o.textContent=String(h).padStart(2,"0")+"h";$("fHour").appendChild(o)}
+{const n=brt(Date.now()/1000);$("fDate").value=n.toISOString().slice(0,10);$("fHour").value=Math.max(0,n.getUTCHours()-1)}
+$("fGo").onclick=()=>{const [y,m,d]=$("fDate").value.split("-").map(Number);if(!y)return;fimReq=Date.UTC(y,m-1,d,+$("fHour").value+3)/1000;if(!SHOW.fim){SHOW.fim=true;ls.set("show",SHOW);document.querySelector('[data-ag="fim"]').setAttribute("aria-pressed","true")}
+  A&&(A.fim=fimathe(fimReq));renderReads();const i0=B.findIndex(x=>x.t>=fimReq);if(i0>=0)view.end=Math.max(0,B.length-1-Math.min(B.length-1,i0+Math.round(view.n*.6)));render()};
+/* ajuste XAUUSD */
+const xNote=()=>{$("xNote").textContent=OFF?`Ajuste em uso: ${OFF>0?"+":""}${br(OFF)}`:"Sem ajuste (preço do PAXG)"};xNote();
+$("xSet").onclick=()=>{const v=parseFloat(String($("xIn").value).replace(",","."));if(!(v>100)||!B.length)return;const raw=B[B.length-1].c-OFF;OFF=Math.round((v-raw)*100)/100;ls.set("off",OFF);xNote();load()};
+$("xClr").onclick=()=>{OFF=0;ls.set("off",0);xNote();load()};
+addEventListener("resize",size);size();load();
+setInterval(()=>{if(!document.hidden)load()},20000);
+</script>
+</body></html>
