@@ -40,6 +40,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .chartbox{position:relative;padding:0;overflow:hidden}
 #chart{display:block;width:100%;touch-action:none}
 #flow{display:block;width:100%}
+.hint{position:absolute;left:10px;bottom:24px;pointer-events:none;opacity:.7;font-size:11px}
 .zoom{position:absolute;right:8px;top:8px;display:flex;gap:4px}.zoom button{padding:4px 10px;background:#0b0c0fcc}
 .status{font-size:12px;color:var(--muted)}
 .reads{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
@@ -75,6 +76,7 @@ details summary{cursor:pointer;color:var(--gold);font-family:var(--display);lett
 </div>
 
 <div class="card chartbox"><canvas id="chart" aria-label="Gráfico de velas com os desenhos dos agentes"></canvas>
+  <div class="hint status" id="hint">Arraste em qualquer direção · dois dedos dão zoom · toque duplo centraliza</div>
   <div class="zoom"><button id="zOut" aria-label="Mais velas">−</button><button id="zIn" aria-label="Menos velas">+</button><button id="zEnd" aria-label="Voltar para o agora">⇥</button></div></div>
 
 <div class="card"><div class="flowhead"><b>FLUXO (DELTA)</b><span id="flowRead" class="mut">—</span></div>
@@ -104,7 +106,7 @@ const br=(v,d=2)=>Number(v).toLocaleString("pt-BR",{minimumFractionDigits:d,maxi
 const ls={get(k,d){try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 const COL={smc:"#38c6e0",wy:"#f5c542",pa:"#a78bfa",fim:"#ff7a3c",up:"#3ddc97",down:"#ff6b6b",mut:"#8a9099",grid:"#1c1f25"};
 let TF=ls.get("tf","5m"),SHOW={smc:true,wy:true,pa:false,fim:false,...ls.get("show",{})},OFF=ls.get("off",0);
-let B=[],M5=[],A=null,view={n:110,end:0},fimReq=null,lastLoad=0,loading=false;
+let B=[],M5=[],A=null,view={n:110,end:0,yOff:0,yScale:1},rng={lo:0,hi:1,ph:1},fimReq=null,lastLoad=0,loading=false;
 const HOSTS=["https://data-api.binance.vision","https://api.binance.com","https://api1.binance.com"];
 
 /* ---------- dados: PAXG/USDT na Binance (delta = volume agredido comprador - vendedor) ---------- */
@@ -212,6 +214,7 @@ function size(){W=cv.parentElement.clientWidth;H=Math.round(Math.max(300,Math.mi
 function render(){if(!B.length){cx.setTransform(R,0,0,R,0,0);cx.clearRect(0,0,W,H);cx.fillStyle=COL.mut;cx.font="14px Barlow,sans-serif";cx.fillText("Carregando as velas do ouro…",14,30);return}
   const n=Math.min(view.n,B.length),end=B.length-1-view.end,start=Math.max(0,end-n+1),vis=B.slice(start,end+1),padR=64,padT=10,padB=22;
   let lo=Math.min(...vis.map(b=>b.l)),hi=Math.max(...vis.map(b=>b.h));const m=(hi-lo)*.08;lo-=m;hi+=m;
+  {const cM=(lo+hi)/2+view.yOff,hf=(hi-lo)/2*view.yScale;lo=cM-hf;hi=cM+hf}rng={lo,hi,ph:H-padT-padB};
   const X=i=>6+(i-start)*(W-padR-14)/Math.max(1,n),Y=v=>padT+(hi-v)/(hi-lo)*(H-padT-padB),bw=Math.max(1.5,(W-padR-14)/n*.62),xe=W-padR;
   const c=cx;c.setTransform(R,0,0,R,0,0);c.clearRect(0,0,W,H);
   /* grade */
@@ -261,11 +264,25 @@ document.querySelectorAll("#tfSeg button").forEach(b=>{b.setAttribute("aria-pres
 document.querySelectorAll("[data-ag]").forEach(b=>{const k=b.dataset.ag;b.setAttribute("aria-pressed",!!SHOW[k]);b.onclick=()=>{SHOW[k]=!SHOW[k];ls.set("show",SHOW);b.setAttribute("aria-pressed",SHOW[k]);$("fimCard").hidden=!SHOW.fim;render()}});
 $("fimCard").hidden=!SHOW.fim;
 $("go").onclick=()=>load();
-$("zIn").onclick=()=>{view.n=Math.max(30,Math.round(view.n/1.4));render()};$("zOut").onclick=()=>{view.n=Math.min(480,Math.round(view.n*1.4));render()};$("zEnd").onclick=()=>{view.end=0;render()};
+$("zIn").onclick=()=>{view.n=Math.max(30,Math.round(view.n/1.4));render()};$("zOut").onclick=()=>{view.n=Math.min(480,Math.round(view.n*1.4));render()};$("zEnd").onclick=()=>{view.end=0;view.yOff=0;view.yScale=1;render()};
 /* arrastar para voltar no tempo */
-let drag=null;cv.addEventListener("pointerdown",e=>{drag={x:e.clientX,end:view.end};cv.setPointerCapture(e.pointerId)});
-cv.addEventListener("pointermove",e=>{if(!drag)return;const per=(W-78)/view.n,dx=Math.round((e.clientX-drag.x)/per);view.end=Math.max(0,Math.min(B.length-view.n,drag.end+dx));render()});
-cv.addEventListener("pointerup",()=>drag=null);cv.addEventListener("pointercancel",()=>drag=null);
+/* gráfico livre: arrastar para os lados (tempo) e para cima/baixo (preço); dois dedos = zoom; arrastar na escala de preço = esticar; toque duplo = centralizar */
+const ptr=new Map();let drag=null,pinch=null,lastTap=0;
+const per=()=>(W-78)/view.n;
+cv.addEventListener("pointerdown",e=>{$("hint").hidden=true;cv.setPointerCapture(e.pointerId);ptr.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(ptr.size===1){const r=cv.getBoundingClientRect(),axis=e.clientX-r.left>W-64;drag={x:e.clientX,y:e.clientY,end:view.end,yOff:view.yOff,yScale:view.yScale,axis};
+    if(Date.now()-lastTap<320){view.yOff=0;view.yScale=1;lastTap=0;render()}}
+  else if(ptr.size===2){const [p1,p2]=[...ptr.values()];pinch={dx:Math.abs(p1.x-p2.x)||1,dy:Math.abs(p1.y-p2.y)||1,n:view.n,yScale:view.yScale};drag=null}});
+cv.addEventListener("pointermove",e=>{if(!ptr.has(e.pointerId))return;ptr.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(pinch&&ptr.size===2){const [p1,p2]=[...ptr.values()],dx=Math.abs(p1.x-p2.x)||1,dy=Math.abs(p1.y-p2.y)||1;
+    if(pinch.dx>40)view.n=Math.max(30,Math.min(480,Math.round(pinch.n*pinch.dx/dx)));if(pinch.dy>40)view.yScale=Math.max(.15,Math.min(8,pinch.yScale*pinch.dy/dy));
+    view.end=Math.max(0,Math.min(B.length-view.n,view.end));render();return}
+  if(!drag)return;const ppx=(rng.hi-rng.lo)/rng.ph;
+  if(drag.axis){view.yScale=Math.max(.15,Math.min(8,drag.yScale*Math.exp((e.clientY-drag.y)/150)));render();return}
+  view.end=Math.max(0,Math.min(B.length-view.n,drag.end+Math.round((e.clientX-drag.x)/per())));
+  view.yOff=drag.yOff+(e.clientY-drag.y)*ppx*1;render()});
+const up=e=>{if(drag&&ptr.size===1&&Math.hypot(e.clientX-drag.x,e.clientY-drag.y)<8)lastTap=Date.now();ptr.delete(e.pointerId);if(ptr.size<2)pinch=null;if(ptr.size===0)drag=null};
+cv.addEventListener("pointerup",up);cv.addEventListener("pointercancel",up);
 /* Fimathe */
 for(let h=0;h<24;h++){const o=document.createElement("option");o.value=h;o.textContent=String(h).padStart(2,"0")+"h";$("fHour").appendChild(o)}
 {const n=brt(Date.now()/1000);$("fDate").value=n.toISOString().slice(0,10);$("fHour").value=Math.max(0,n.getUTCHours()-1)}
