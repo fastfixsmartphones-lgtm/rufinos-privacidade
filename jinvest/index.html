@@ -90,9 +90,9 @@ details summary{cursor:pointer;color:var(--gold);font-family:var(--display);lett
 
 <div class="reads" id="reads"></div>
 
-<div class="card"><details><summary>Ajuste para o preço da Exness (XAUUSD)</summary>
-  <p class="status">As velas vêm do PAXG (ouro tokenizado na Binance), que fica alguns dólares diferente do XAUUSD da corretora e também anda no fim de semana. Digite o preço do XAUUSD que aparece agora no app da Exness e eu ajusto todos os níveis.</p>
-  <div class="fim"><label>XAUUSD agora <input type="number" step="0.01" id="xIn" inputmode="decimal"></label><button id="xSet">Ajustar</button><button id="xClr">Tirar ajuste</button><span class="status" id="xNote"></span></div>
+<div class="card"><details><summary>Preço igual ao XAUUSD do MT5</summary>
+  <p class="status">As velas vêm do PAXG (ouro tokenizado na Binance) e são convertidas sozinhas para o XAUUSD à vista, então os níveis ficam no mesmo preço do MT5. Se ainda ficar uma diferença de centavos para a Exness, digite o preço do XAUUSD que aparece agora no MT5 do celular e eu acerto. "Tirar ajuste" volta para o automático.</p>
+  <div class="fim"><label>XAUUSD agora <input type="number" step="0.01" id="xIn" inputmode="decimal"></label><button id="xSet">Ajustar</button><button id="xClr">Voltar ao automático</button><span class="status" id="xNote"></span></div>
 </details></div>
 <p class="status">Só análise e estudo: nada aqui abre ordem. Passado não garante o futuro; a decisão é sua.</p>
 </div>
@@ -109,10 +109,17 @@ const HOSTS=["https://data-api.binance.vision","https://api.binance.com","https:
 
 /* ---------- dados: PAXG/USDT na Binance (delta = volume agredido comprador - vendedor) ---------- */
 async function klines(tf,limit){let err;for(const h of HOSTS){try{const r=await fetch(`${h}/api/v3/klines?symbol=PAXGUSDT&interval=${tf}&limit=${limit}`,{cache:"no-store"});
-  if(!r.ok)throw new Error("HTTP "+r.status);const j=await r.json();return j.map(k=>{const v=+k[5],tb=+k[9];return{t:Math.floor(k[0]/1000),o:+k[1]+OFF,h:+k[2]+OFF,l:+k[3]+OFF,c:+k[4]+OFF,v,d:2*tb-v}})}catch(e){err=e}}throw err}
+  if(!r.ok)throw new Error("HTTP "+r.status);const j=await r.json();return j.map(k=>{const v=+k[5],tb=+k[9];return{t:Math.floor(k[0]/1000),o:+k[1],h:+k[2],l:+k[3],c:+k[4],v,d:2*tb-v}})}catch(e){err=e}}throw err}
+/* preço do ouro à vista (XAUUSD) para converter o PAXG automaticamente */
+let AUTO=0,autoAt=0,autoOk=false;
+async function spot(){try{const r=await fetch("https://api.gold-api.com/price/XAU",{cache:"no-store"});if(!r.ok)throw 0;const j=await r.json();const v=+j.price;return v>100?v:null}catch(e){return null}}
+const shift=(arr,o)=>arr.map(x=>({...x,o:x.o+o,h:x.h+o,l:x.l+o,c:x.c+o}));
 async function load(){if(loading)return;loading=true;try{
-    const [b,m]=await Promise.all([klines(TF,500),TF==="5m"?null:klines("5m",1000)]);B=b;M5=m||b;lastLoad=Date.now();
-    $("src").textContent=`PAXG · Binance${OFF?` · ajuste ${OFF>0?"+":""}${br(OFF)}`:""} · ${TF.toUpperCase()}`;analyze();render();
+    const [b,m,sp]=await Promise.all([klines(TF,500),TF==="5m"?null:klines("5m",1000),Date.now()-autoAt>60000?spot():Promise.resolve(undefined)]);
+    if(sp){AUTO=Math.round((sp-b[b.length-1].c)*100)/100;autoAt=Date.now();autoOk=true}else if(sp===null&&!autoAt){autoOk=false}
+    const use=OFF?OFF:(autoOk?AUTO:0);B=shift(b,use);M5=shift(m||b,use);lastLoad=Date.now();
+    $("src").textContent=(OFF?`XAUUSD · ajuste manual ${OFF>0?"+":""}${br(OFF)}`:autoOk?`XAUUSD · convertido do PAXG (${AUTO>=0?"+":""}${br(AUTO)})`:"PAXG · sem conversão")+` · ${TF.toUpperCase()}`;
+    xNote();analyze();render();
   }catch(e){showErr("Não consegui buscar as velas do ouro na Binance. Confira a internet do celular. Se estiver abrindo dentro de outro app, abra este arquivo direto no navegador (Chrome ou Safari).")}
   loading=false}
 function showErr(t){let e=$("errBox");if(!e){e=document.createElement("div");e.id="errBox";e.className="card err";document.querySelector(".bar").before(e)}e.textContent=t}
@@ -240,8 +247,8 @@ function drawFlow(start,end,n,padR,bw){const w=fc.width/R,h=110,c=fx;c.setTransf
   let a=0;const cum=vis.map(b=>a+=b.d),cmn=Math.min(...cum),cmx=Math.max(...cum),cy=v=>6+(cmx-v)/((cmx-cmn)||1)*(h-12);c.strokeStyle=COL.wy;c.lineWidth=2;c.beginPath();cum.forEach((v,k)=>{k?c.lineTo(X(start+k),cy(v)):c.moveTo(X(start+k),cy(v))});c.stroke();c.lineWidth=1;
   const L6=B.slice(-6),s=L6.reduce((q,b)=>q+b.d,0),t=L6.reduce((q,b)=>q+Math.abs(b.d),0)||1,p=Math.round(100*s/t),el=$("flowRead");
   el.textContent=Math.abs(p)<10?"Fluxo equilibrado (últimas 6 velas)":`${p>0?"Comprador":"Vendedor"} ${Math.abs(p)>=50?"forte":Math.abs(p)>=20?"moderado":"fraco"} · ${p>0?"+":""}${p}%`;el.className=Math.abs(p)<10?"mut":p>0?"up":"down"}
-function header(){const l=B[B.length-1],ref=B[Math.max(0,B.length-1-(TF==="1h"?24:TF==="15m"?96:288))];$("px").textContent=br(l.c);const d=l.c-ref.c;
-  $("chg").textContent=`${d>=0?"+":"−"}${br(Math.abs(d))} em 24h · ${hm(l.t)}`;$("chg").className=d>=0?"up":"down"}
+function header(){const wd=brt(Date.now()/1000).getUTCDay(),hh=brt(Date.now()/1000).getUTCHours();if(wd===6||(wd===0&&hh<19)||(wd===5&&hh>=18))$("chg").dataset.wk="1";else delete $("chg").dataset.wk;const l=B[B.length-1],ref=B[Math.max(0,B.length-1-(TF==="1h"?24:TF==="15m"?96:288))];$("px").textContent=br(l.c);const d=l.c-ref.c;
+  $("chg").textContent=`${d>=0?"+":"−"}${br(Math.abs(d))} em 24h · ${hm(l.t)}`+($("chg").dataset.wk?" · mercado do ouro fechado no MT5":"");$("chg").className=d>=0?"up":"down"}
 
 /* ---------- leituras em cartões ---------- */
 function renderReads(){const box=$("reads");box.innerHTML="";if(!A)return;
@@ -265,8 +272,8 @@ for(let h=0;h<24;h++){const o=document.createElement("option");o.value=h;o.textC
 $("fGo").onclick=()=>{const [y,m,d]=$("fDate").value.split("-").map(Number);if(!y)return;fimReq=Date.UTC(y,m-1,d,+$("fHour").value+3)/1000;if(!SHOW.fim){SHOW.fim=true;ls.set("show",SHOW);document.querySelector('[data-ag="fim"]').setAttribute("aria-pressed","true")}
   A&&(A.fim=fimathe(fimReq));renderReads();const i0=B.findIndex(x=>x.t>=fimReq);if(i0>=0)view.end=Math.max(0,B.length-1-Math.min(B.length-1,i0+Math.round(view.n*.6)));render()};
 /* ajuste XAUUSD */
-const xNote=()=>{$("xNote").textContent=OFF?`Ajuste em uso: ${OFF>0?"+":""}${br(OFF)}`:"Sem ajuste (preço do PAXG)"};xNote();
-$("xSet").onclick=()=>{const v=parseFloat(String($("xIn").value).replace(",","."));if(!(v>100)||!B.length)return;const raw=B[B.length-1].c-OFF;OFF=Math.round((v-raw)*100)/100;ls.set("off",OFF);xNote();load()};
+function xNote(){$("xNote").textContent=OFF?`Ajuste manual em uso: ${OFF>0?"+":""}${br(OFF)}`:autoOk?`Automático: XAUUSD à vista, diferença de ${AUTO>=0?"+":""}${br(AUTO)}`:"Sem conversão automática agora (use o ajuste manual)"}
+$("xSet").onclick=()=>{const v=parseFloat(String($("xIn").value).replace(",","."));if(!(v>100)||!B.length)return;const used=OFF?OFF:(autoOk?AUTO:0),raw=B[B.length-1].c-used;OFF=Math.round((v-raw)*100)/100;ls.set("off",OFF);xNote();load()};
 $("xClr").onclick=()=>{OFF=0;ls.set("off",0);xNote();load()};
 addEventListener("resize",size);size();load();
 setInterval(()=>{if(!document.hidden)load()},20000);
