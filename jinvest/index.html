@@ -17,7 +17,7 @@
   --display:"Barlow Condensed",ui-sans-serif,system-ui,sans-serif;--body:"Barlow",ui-sans-serif,system-ui,sans-serif;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
   color-scheme:dark}
 *{box-sizing:border-box}
-html,body{margin:0;background:var(--bg);color:var(--text);font-family:var(--body);font-size:14px;line-height:1.45;-webkit-tap-highlight-color:transparent}
+html,body{overscroll-behavior:none;margin:0;background:var(--bg);color:var(--text);font-family:var(--body);font-size:14px;line-height:1.45;-webkit-tap-highlight-color:transparent}
 body{padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px));padding-block:max(10px,env(safe-area-inset-top,0px)) max(24px,env(safe-area-inset-bottom,0px))}
 .wrap{max-width:1100px;margin:0 auto;display:flex;flex-direction:column;gap:10px}
 header{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
@@ -38,7 +38,8 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px;min-width:0}
 .card h2{margin:0 0 6px;font-family:var(--display);font-size:15px;letter-spacing:.1em;text-transform:uppercase;display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}
 .chartbox{position:relative;padding:0;overflow:hidden}
-#chart{display:block;width:100%;touch-action:none}
+#chart{display:block;width:100%;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.chartbox{touch-action:none;overscroll-behavior:contain}
 #flow{display:block;width:100%}
 .hint{position:absolute;left:10px;bottom:24px;pointer-events:none;opacity:.7;font-size:11px}
 .zoom{position:absolute;right:8px;top:8px;display:flex;gap:4px}.zoom button{padding:4px 10px;background:#0b0c0fcc}
@@ -96,7 +97,7 @@ details summary{cursor:pointer;color:var(--gold);font-family:var(--display);lett
   <p class="status">As velas vêm do PAXG (ouro tokenizado na Binance) e são convertidas sozinhas para o XAUUSD à vista, então os níveis ficam no mesmo preço do MT5. Se ainda ficar uma diferença de centavos para a Exness, digite o preço do XAUUSD que aparece agora no MT5 do celular e eu acerto. "Tirar ajuste" volta para o automático.</p>
   <div class="fim"><label>XAUUSD agora <input type="number" step="0.01" id="xIn" inputmode="decimal"></label><button id="xSet">Ajustar</button><button id="xClr">Voltar ao automático</button><span class="status" id="xNote"></span></div>
 </details></div>
-<p class="status">Versão 3 (gráfico livre). Só análise e estudo: nada aqui abre ordem. Passado não garante o futuro; a decisão é sua.</p>
+<p class="status">Versão 4 (gráfico livre). Só análise e estudo: nada aqui abre ordem. Passado não garante o futuro; a decisão é sua.</p>
 </div>
 
 <script>
@@ -282,6 +283,8 @@ cv.addEventListener("pointermove",e=>{if(!ptr.has(e.pointerId))return;ptr.set(e.
   view.end=Math.max(0,Math.min(B.length-view.n,drag.end+Math.round((e.clientX-drag.x)/per())));
   view.yOff=drag.yOff+(e.clientY-drag.y)*ppx*1;render()});
 const up=e=>{if(drag&&ptr.size===1&&Math.hypot(e.clientX-drag.x,e.clientY-drag.y)<8)lastTap=Date.now();ptr.delete(e.pointerId);if(ptr.size<2)pinch=null;if(ptr.size===0)drag=null};
+/* iPhone: o dedo no gráfico não rola nem atualiza a página */
+["touchstart","touchmove","gesturestart","gesturechange"].forEach(ev=>cv.addEventListener(ev,e=>e.preventDefault(),{passive:false}));
 cv.addEventListener("pointerup",up);cv.addEventListener("pointercancel",up);
 /* Fimathe */
 for(let h=0;h<24;h++){const o=document.createElement("option");o.value=h;o.textContent=String(h).padStart(2,"0")+"h";$("fHour").appendChild(o)}
